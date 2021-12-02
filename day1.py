@@ -13,6 +13,7 @@ if __name__ == '__main__':
 
     triples = []
     # I don't like this, but group does uniques
+    # so do it the brutey force way
     for index, first_value in enumerate(data):
         if index + 2 >= len(data):
             break
