@@ -98,7 +98,7 @@ if __name__ == '__main__':
     first_winner = list(itertools.chain(*complete_cards[:1][0].values.tolist()))
     unmarked = list(filter(lambda x: (int(x) > 0), first_winner))
     unmarked_sum = sum([int(x) for x in unmarked])
-    part1 = unmarked_sum * winning_numbers[:1][0]
+    part1 = unmarked_sum * winning_numbers[0]
     print(f'Part 1 {part1}')
 
     last_winner = list(itertools.chain(*complete_cards[-1].values.tolist()))
