@@ -19,8 +19,7 @@ def is_column_complete(card_to_check: pandas.DataFrame) -> pandas.DataFrame:
     test_card = card_to_check.fillna('-0')
     for column in list(test_card):
         column_values = test_card[column].values.tolist()
-        marked = sum(1 if i.startswith('-') else 0 for i in column_values)
-        if marked == len(column_values):
+        if sum(1 if i.startswith('-') else 0 for i in column_values) == len(column_values):
             return test_card
     return None
 
@@ -28,8 +27,7 @@ def is_column_complete(card_to_check: pandas.DataFrame) -> pandas.DataFrame:
 def is_row_complete(card_to_check: pandas.DataFrame) -> pandas.DataFrame:
     test_card = card_to_check.fillna('-0')
     for row_values in test_card.values.tolist():
-        marked = sum(1 if i.startswith('-') else 0 for i in row_values)
-        if marked == len(row_values):
+        if sum(1 if i.startswith('-') else 0 for i in row_values) == len(row_values):
             return test_card
     return None
 
