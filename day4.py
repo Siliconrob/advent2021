@@ -78,21 +78,22 @@ if __name__ == '__main__':
     mark_zero = np.NAN
     complete_cards = []
     winning_numbers = []
-    for draw_number in draw_numbers:
+    for current_run, draw_number in enumerate(draw_numbers):
         if is_empty(bingo_cards):
             break
-        replace_number = mark_zero if draw_number == 0 else str(draw_number * -1)
+        replace_number = mark_zero if draw_number == 0 else str(draw_number * -1) # my simple plan is drawn numbers are negated
         index = 0
         for bingo_card in bingo_cards:
             if bingo_card is None:
                 index += 1
                 continue
             bingo_card.replace(str(draw_number), replace_number, True)
-            complete_card = is_complete(bingo_card)
-            if complete_card is not None:
-                complete_cards.append(complete_card.copy(deep=True))
-                winning_numbers.append(draw_number)
-                bingo_cards[index] = None
+            if current_run > 4: # only start checking after 5 numbers drawn
+                complete_card = is_complete(bingo_card)
+                if complete_card is not None:
+                    complete_cards.append(complete_card.copy(deep=True))
+                    winning_numbers.append(draw_number)
+                    bingo_cards[index] = None
             index += 1
 
     first_winner = list(itertools.chain(*complete_cards[:1][0].values.tolist()))
