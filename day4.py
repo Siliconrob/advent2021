@@ -1,4 +1,5 @@
 import itertools
+import numpy as np
 import pandas
 import pandas as pd
 from aocd import get_data
@@ -9,35 +10,43 @@ def create_bingo_card(input_rows: str) -> pandas.DataFrame:
     input_matrix = []
     card_rows = [row for row in input_rows.split('\n')]
     for row_data in card_rows:
-        row = [int(value) for value in parse('{} {} {} {} {}', row_data)]
+        row = [str.strip(value) for value in parse('{} {} {} {} {}', row_data)]
         input_matrix.append(row)
     return pd.DataFrame(input_matrix)
 
 
-def is_column_complete(card_to_check: pandas.DataFrame, zero_marker: float) -> pandas.DataFrame:
-    for column in list(card_to_check):
-        column_values = card_to_check[column].values.tolist()
-        marked = sum(i < 0 for i in column_values)
+def is_column_complete(card_to_check: pandas.DataFrame) -> pandas.DataFrame:
+    test_card = card_to_check.fillna('-0')
+    for column in list(test_card):
+        column_values = test_card[column].values.tolist()
+        marked = sum(1 if i.startswith('-') else 0 for i in column_values)
         if marked == len(column_values):
-            card_to_check.replace(zero_marker, 0, True)
-            return card_to_check
+            return test_card
     return None
 
 
-def is_row_complete(card_to_check: pandas.DataFrame, zero_marker: float) -> pandas.DataFrame:
-    for row in card_to_check.values.tolist():
-        marked = sum(i < 0 for i in row)
-        if marked == len(row):
-            card_to_check.replace(zero_marker, 0, True)
-            return card_to_check
+def is_row_complete(card_to_check: pandas.DataFrame) -> pandas.DataFrame:
+    test_card = card_to_check.fillna('-0')
+    for row_values in test_card.values.tolist():
+        marked = sum(1 if i.startswith('-') else 0 for i in row_values)
+        if marked == len(row_values):
+            return test_card
     return None
 
 
-def is_complete(card_to_check: pandas.DataFrame, zero_marker: float) -> pandas.DataFrame:
-    checked_card = is_column_complete(card_to_check, zero_marker)
+def is_complete(card_to_check: pandas.DataFrame) -> pandas.DataFrame:
+    checked_card = is_column_complete(card_to_check)
     if checked_card is not None:
         return checked_card
-    return is_row_complete(card_to_check, zero_marker)
+    return is_row_complete(card_to_check)
+
+
+def is_empty(current_cards: list) -> bool:
+    nones = 0
+    for current_card in current_cards:
+        if current_card is None:
+            nones += 1
+    return nones == len(current_cards)
 
 
 if __name__ == '__main__':
@@ -68,20 +77,34 @@ if __name__ == '__main__':
         new_playable_card = create_bingo_card(card_input)
         bingo_cards.append(new_playable_card)
 
-    mark_zero = -.1
-    complete_card = None
-    winning_number = None
+    mark_zero = np.NAN
+    complete_cards = []
+    winning_numbers = []
     for draw_number in draw_numbers:
-        replace_number = mark_zero if draw_number == 0 else draw_number * -1
-        for bingo_card in bingo_cards:
-            bingo_card.replace(draw_number, replace_number, True)
-            complete_card = is_complete(bingo_card, mark_zero)
-            if complete_card is not None:
-                break
-        if complete_card is not None:
-            winning_number = draw_number
+        if is_empty(bingo_cards):
             break
-    flattened = list(itertools.chain(*complete_card.values.tolist()))
-    unmarked = list(filter(lambda x: (x > 0), flattened))
+        replace_number = mark_zero if draw_number == 0 else str(draw_number * -1)
+        index = 0
+        for bingo_card in bingo_cards:
+            if bingo_card is None:
+                index += 1
+                continue
+            bingo_card.replace(str(draw_number), replace_number, True)
+            complete_card = is_complete(bingo_card)
+            if complete_card is not None:
+                complete_cards.append(complete_card.copy(deep=True))
+                winning_numbers.append(draw_number)
+                bingo_cards[index] = None
+            index += 1
+
+    first_winner = list(itertools.chain(*complete_cards[:1][0].values.tolist()))
+    unmarked = list(filter(lambda x: (int(x) > 0), first_winner))
     unmarked_sum = sum([int(x) for x in unmarked])
-    print(f'Part 1 {unmarked_sum * winning_number}')
+    part1 = unmarked_sum * winning_numbers[:1][0]
+    print(f'Part 1 {part1}')
+
+    last_winner = list(itertools.chain(*complete_cards[-1].values.tolist()))
+    unmarked = list(filter(lambda x: (int(x) > 0), last_winner))
+    unmarked_sum = sum([int(x) for x in unmarked])
+    part2 = unmarked_sum * winning_numbers[-1]
+    print(f'Part 2 {part2}')
