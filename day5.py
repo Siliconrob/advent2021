@@ -60,6 +60,20 @@ def new_grid(input_coords: list) -> pandas.DataFrame:
     return empty_frame
 
 
+def plot_part1(current_grid: pandas.DataFrame, part1_lines: list) -> pandas.DataFrame:
+    the_grid = current_grid.copy(deep=True)
+    for part1_line in part1_lines:
+        if part1_line.start.x == part1_line.end.x:
+            min_max = [part1_line.start.y, part1_line.end.y]
+            for y in range(min(min_max), max(min_max) + 1, 1):
+                the_grid.iat[y, part1_line.start.x] += 1
+        elif part1_line.start.y == part1_line.end.y:
+            min_max = [part1_line.start.x, part1_line.end.x]
+            for x in range(min(min_max), max(min_max) + 1, 1):
+                the_grid.iat[part1_line.start.y, x] += 1
+    return the_grid
+
+
 if __name__ == '__main__':
 #     data = """0,9 -> 5,9
 # 8,0 -> 0,8
@@ -74,18 +88,6 @@ if __name__ == '__main__':
     data = get_data(day=5)
     lines = [parse_line(line_input) for line_input in data.splitlines()]
     plot_grid = new_grid(lines)
-    valid_lines = list(filter(lambda line: line.part1_valid(), lines))
-    for valid_line in valid_lines:
-        if valid_line.start.x == valid_line.end.x:
-            min_max = [valid_line.start.y, valid_line.end.y]
-            for y in range(min(min_max), max(min_max) + 1, 1):
-                plot_grid.iat[y, valid_line.start.x] = plot_grid.iat[y, valid_line.start.x] + 1
-        if valid_line.start.y == valid_line.end.y:
-            min_max = [valid_line.start.x, valid_line.end.x]
-            for x in range(min(min_max), max(min_max) + 1, 1):
-                plot_grid.iat[valid_line.start.y, x] = plot_grid.iat[valid_line.start.y, x] + 1
-    plot_grid.values.tolist()
-
-    two_overlaps = sum(plot_grid.ge(2).sum())
-    print(f'Part 1 {two_overlaps}')
+    part1_grid = plot_part1(plot_grid, list(filter(lambda line: line.part1_valid(), lines)))
+    print(f'Part 1 {sum(part1_grid.ge(2).sum())}')
 
