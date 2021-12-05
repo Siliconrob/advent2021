@@ -26,7 +26,7 @@ if __name__ == '__main__':
     #     "forward 2"
     # ]
 
-    data = get_data(day=2).splitlines()
+    data = get_data(day=2, year=2021).splitlines()
 
     movements = []
     for line in data:

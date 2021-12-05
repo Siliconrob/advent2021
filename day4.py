@@ -66,7 +66,7 @@ if __name__ == '__main__':
 # 18  8 23 26 20
 # 22 11 13  6  5
 #  2  0 12  3  7"""
-    data = get_data(day=4)
+    data = get_data(day=4, year=2021)
     split_data = data.split("\n\n")
     draw_numbers = [int(x) for x in split_data[:1][0].split(',')]
     bingo_cards = []

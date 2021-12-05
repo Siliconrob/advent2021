@@ -4,7 +4,7 @@ from aocd import get_data
 if __name__ == '__main__':
     #data = [199,200,208,210,200,207,240,269,260,263]
 
-    data = [int(i) for i in list(get_data(day=1).splitlines())]
+    data = [int(i) for i in list(get_data(day=1, year=2021).splitlines())]
 
     pairs = list(itertools.pairwise(data))
     diffs = [second - first for first, second in pairs]

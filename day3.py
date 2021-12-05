@@ -62,7 +62,7 @@ def find_bit_row(input_matrix: list, columns_in_frame: int, filter: types.Functi
 
 if __name__ == '__main__':
     # data = ['00100', '11110', '10110', '10111', '10101', '01111', '00111', '11100', '10000', '11001', '00010', '01010']
-    data = get_data(day=3).splitlines()
+    data = get_data(day=3, year=2021).splitlines()
     columns = []
     column_count = 0
     for line in data:
