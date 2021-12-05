@@ -10,8 +10,7 @@ def create_bingo_card(input_rows: str) -> pandas.DataFrame:
     input_matrix = []
     card_rows = [row for row in input_rows.split('\n')]
     for row_data in card_rows:
-        row = [str.strip(value) for value in parse('{} {} {} {} {}', row_data)]
-        input_matrix.append(row)
+        input_matrix.append([str.strip(value) for value in parse('{} {} {} {} {}', row_data)])
     return pd.DataFrame(input_matrix)
 
 
