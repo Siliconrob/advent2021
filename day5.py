@@ -24,10 +24,35 @@ class Line:
     start: Point = Point()
     end: Point = Point()
 
-    def part1_valid(self) -> bool:
-        if self.start.x == self.end.x or self.start.y == self.end.y:
-            return True
-        return False
+    def compute_part2(self) -> list:
+        line_coords = self.compute_part1()
+        if len(line_coords) > 0:
+            return line_coords
+        min_max_x = [self.start.x, self.end.x]
+        x_increments = max(min_max_x) - min(min_max_x)
+        min_max_y = [self.start.y, self.end.y]
+        y_increments = max(min_max_y) - min(min_max_y)
+        if x_increments != y_increments:
+            return line_coords
+        for inc in range(x_increments + 1):
+            x_change = (1 if self.start.x < self.end.x else -1) * inc
+            y_change = (1 if self.start.y < self.end.y else -1) * inc
+            line_coords.append((self.start.y + y_change, self.start.x + x_change))
+        return line_coords
+
+    def compute_part1(self) -> list:
+        line_coords = []
+        if self.start.x == self.end.x:
+            min_max_y = [self.start.y, self.end.y]
+            for y in range(min(min_max_y), max(min_max_y) + 1, 1):
+                line_coords.append((y, self.start.x))
+            return line_coords
+        if self.start.y == self.end.y:
+            min_max_x = [self.start.x, self.end.x]
+            for x in range(min(min_max_x), max(min_max_x) + 1, 1):
+                line_coords.append((self.start.y, x))
+            return line_coords
+        return line_coords
 
 
 def parse_coordinate(input_coord: str) -> Point:
@@ -63,16 +88,23 @@ def new_grid(input_coords: list) -> pandas.DataFrame:
 def plot_part1(current_grid: pandas.DataFrame, part1_lines: list) -> pandas.DataFrame:
     the_grid = current_grid.copy(deep=True)
     for part1_line in part1_lines:
-        if part1_line.start.x == part1_line.end.x:
-            min_max = [part1_line.start.y, part1_line.end.y]
-            for y in range(min(min_max), max(min_max) + 1, 1):
-                the_grid.iat[y, part1_line.start.x] += 1
-        elif part1_line.start.y == part1_line.end.y:
-            min_max = [part1_line.start.x, part1_line.end.x]
-            for x in range(min(min_max), max(min_max) + 1, 1):
-                the_grid.iat[part1_line.start.y, x] += 1
+        line_coords = part1_line.compute_part1()
+        if len(line_coords) == 0:
+            continue
+        for line_coord in line_coords:
+            the_grid.iat[line_coord[0], line_coord[1]] += 1
     return the_grid
 
+
+def plot_part2(current_grid: pandas.DataFrame, part2_lines: list) -> pandas.DataFrame:
+    the_grid = current_grid.copy(deep=True)
+    for part2_line in part2_lines:
+        line_coords = part2_line.compute_part2()
+        if len(line_coords) == 0:
+            continue
+        for line_coord in line_coords:
+            the_grid.iat[line_coord[0], line_coord[1]] += 1
+    return the_grid
 
 if __name__ == '__main__':
 #     data = """0,9 -> 5,9
@@ -88,6 +120,7 @@ if __name__ == '__main__':
     data = get_data(day=5)
     lines = [parse_line(line_input) for line_input in data.splitlines()]
     plot_grid = new_grid(lines)
-    part1_grid = plot_part1(plot_grid, list(filter(lambda line: line.part1_valid(), lines)))
+    part1_grid = plot_part1(plot_grid, lines)
     print(f'Part 1 {sum(part1_grid.ge(2).sum())}')
-
+    part2_grid = plot_part2(plot_grid, lines)
+    print(f'Part 2 {sum(part2_grid.ge(2).sum())}')
