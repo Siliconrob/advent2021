@@ -5,7 +5,7 @@ from aocd import get_data
 def part2_move(inputs: np.array, target: int):
     results = []
     diffs = abs(inputs - target)
-    for index, diff in enumerate(diffs):
+    for diff in diffs:
         step_index = 1
         move_cost = 0
         for current_unit in range(0, diff):
