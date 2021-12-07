@@ -1,5 +1,6 @@
 import numpy as np
 from aocd import get_data
+from collections import deque
 
 if __name__ == '__main__':
     #data = "3,4,3,1,2"
@@ -22,16 +23,10 @@ if __name__ == '__main__':
 
     # only care about the day totals so move that along
     fish = [int(x) for x in data.split(',')]
-    spawn_days = []
-    for spawn_day in range(9):
-        count = sum(map(lambda x: x == spawn_day, fish))
-        spawn_days.append(count)
-
+    sums = [sum(map(lambda x: x == spawn_day, fish)) for spawn_day in range(9)]
+    spawn_day_totals = deque(sums)
     for day in range(256):
-        to_add = spawn_days[0]
-        spawn_days = spawn_days[1:]
-        spawn_days.append(to_add)
-        spawn_days[6] += to_add
-    print(f'Part 2: {sum(spawn_days)}')
-
-
+        to_add = spawn_day_totals[0]
+        spawn_day_totals.rotate(-1)
+        spawn_day_totals[6] += to_add
+    print(f'Part 2: {sum(spawn_day_totals)}')
