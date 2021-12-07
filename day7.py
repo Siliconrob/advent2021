@@ -39,9 +39,4 @@ if __name__ == '__main__':
     print(f'Part 1 {current_distance_part1}')
     current_distance_part2 = compute_distance(data_points, part2_move)
     print(f'Part 2 {current_distance_part2}')
-
-    #
-    #     compute_part2()
-
-#    print(f'Part 1 {current_distance_part1}')
-    #print(f'Part 2 {current_distance_part2}')
+    
