@@ -1,8 +1,9 @@
+import types
 import numpy as np
 from aocd import get_data
 
 
-def part2_move(inputs: np.array, target: int):
+def part2_move(inputs: np.array, target: int) -> np.array:
     results = []
     diffs = abs(inputs - target)
     for diff in diffs:
@@ -15,24 +16,32 @@ def part2_move(inputs: np.array, target: int):
     return np.array(results)
 
 
+def part1_move(inputs: np.array, target: int) -> np.array:
+    diffs = abs(inputs - target)
+    return np.array(diffs)
+
+
+def compute_distance(the_data_points: np.array, compute_fn: types.FunctionType) -> int:
+    distance = np.inf
+    for current_target in range(the_data_points.min(), the_data_points.max()):
+        fuel_cost = compute_fn(the_data_points, current_target)
+        fuel_cost = np.sum(fuel_cost).squeeze()
+        if distance > fuel_cost:
+            distance = fuel_cost
+    return distance
+
+
 if __name__ == '__main__':
     #data = "16,1,2,0,4,2,7,1,2,14"
     data = get_data(day=7, year=2021)
     data_points = np.array([int(x) for x in data.split(',')])
-
-    current_distance_part1 = np.inf
-    current_distance_part2 = np.inf
-
-    for current_target in range(data_points.min(), data_points.max()):
-        move_fn_part1 = lambda z: abs(z - current_target)
-        fuel_costs_part1 = move_fn_part1(data_points)
-        fuel_cost_part1 = np.sum(fuel_costs_part1).squeeze()
-        if current_distance_part1 > fuel_cost_part1:
-            current_distance_part1 = fuel_cost_part1
-        fuel_costs_part2 = part2_move(data_points, current_target)
-        fuel_cost_part2 = np.sum(fuel_costs_part2).squeeze()
-        if current_distance_part2 > fuel_cost_part2:
-            current_distance_part2 = fuel_cost_part2
-
+    current_distance_part1 = compute_distance(data_points, part1_move)
     print(f'Part 1 {current_distance_part1}')
+    current_distance_part2 = compute_distance(data_points, part2_move)
     print(f'Part 2 {current_distance_part2}')
+
+    #
+    #     compute_part2()
+
+#    print(f'Part 1 {current_distance_part1}')
+    #print(f'Part 2 {current_distance_part2}')
