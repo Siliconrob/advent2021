@@ -64,17 +64,17 @@ def create_signal_input(signal_line: list) -> InputSignal:
     # five signal pattern common elements
     signal_adg = set.intersection(*map(set, three_five_two_options))
     # six signal pattern common elements
-    signal_bdefg = set.intersection(*map(set, zero_six_nine_options))
+    signal_abfg = set.intersection(*map(set, zero_six_nine_options))
 
     # make a lookup table
     signal_table = InputSignal()
     signal_table.A = set.difference(signal_acf, signal_cf)
     signal_table.B = set.difference(set.difference(signal_bcdf, signal_cf), signal_adg)
-    signal_table.C = set.difference(signal_cf, signal_bdefg)
+    signal_table.C = set.difference(signal_cf, signal_abfg)
     signal_table.D = set.intersection(signal_bcdf, signal_adg)
     signal_table.E = set.difference(set.difference(signal_abcdefg, signal_adg), signal_bcdf)
-    signal_table.F = set.intersection(signal_bdefg, signal_cf)
-    signal_table.G = set.difference(set.intersection(signal_bdefg, signal_adg), signal_bcdf)
+    signal_table.F = set.intersection(signal_abfg, signal_cf)
+    signal_table.G = set.difference(set.intersection(signal_abfg, signal_adg), signal_bcdf)
     return signal_table
 
 
