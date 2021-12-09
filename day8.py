@@ -58,7 +58,7 @@ def create_signal_input(signal_line: list) -> InputSignal:
     signal_abcdefg = set(list(filter(lambda x: (len(x) == 7), signal_line)).pop())  # 8
 
     # multiple options
-    three_five_two_options = five_segment_options = list(filter(lambda x: (len(x) == 5), signal_line))
+    three_five_two_options = list(filter(lambda x: (len(x) == 5), signal_line))
     zero_six_nine_options = list(filter(lambda x: (len(x) == 6), signal_line))
 
     # five signal pattern common elements
