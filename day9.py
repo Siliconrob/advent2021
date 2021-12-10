@@ -15,6 +15,7 @@ class Point:
 class LowPoints(Point):
     value: int = np.inf
 
+
 @dataclass
 class Bounds:
     min_row: int = np.inf
@@ -32,6 +33,14 @@ def possible_neighbors(row: int, column: int) -> list:
     ]
 
 
+def is_valid_cell_location(point_location: Point, grid_bounds: Bounds) -> bool:
+    if point_location.column < grid_bounds.min_column or point_location.column > grid_bounds.max_column:
+        return False
+    if point_location.row < grid_bounds.min_row or point_location.row > grid_bounds.max_row:
+        return False
+    return True
+
+
 def find_low_points(the_grid: pandas.DataFrame) -> (list, Bounds):
     low_points = []
     the_grid_bounds = Bounds()
@@ -45,11 +54,8 @@ def find_low_points(the_grid: pandas.DataFrame) -> (list, Bounds):
                 the_grid_bounds.min_row = 0
                 the_grid_bounds.max_row = the_grid[col_index].count() - 1
             for col_x, row_y in possible_neighbors(row_index, col_index):
-                if col_x < the_grid_bounds.min_column or col_x > the_grid_bounds.max_column:
-                    continue
-                if row_y < the_grid_bounds.min_row or row_y > the_grid_bounds.max_row:
-                    continue
-                adjacency.append(the_grid.iat[row_y, col_x])
+                if is_valid_cell_location(Point(row=row_y, column=col_x), the_grid_bounds):
+                    adjacency.append(the_grid.iat[row_y, col_x])
             if all(x > target_cell for x in adjacency):
                 low_points.append(LowPoints(row=row_index, column=col_index, value=target_cell))
     return low_points, the_grid_bounds
@@ -66,9 +72,7 @@ def find_basins(the_low_points: list, start_grid: pandas.DataFrame, current_boun
             target_cell = cells_to_check.popleft()
             temp_grid.iat[target_cell.row, target_cell.column] = np.inf
             for col_x, row_y in possible_neighbors(target_cell.row, target_cell.column):
-                if col_x < current_bounds.min_column or col_x > current_bounds.max_column:
-                    continue
-                if row_y < current_bounds.min_row or row_y > current_bounds.max_row:
+                if is_valid_cell_location(Point(row=row_y, column=col_x), current_bounds) is False:
                     continue
                 if temp_grid.iat[row_y, col_x] < 9:
                     cells_to_check.append(Point(row_y, col_x))
