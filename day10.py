@@ -25,6 +25,55 @@ class SyntaxCompletion:
     required_tags: list
 
 
+def corrupt_lines(input_data: list, current_syntax: list) -> list:
+    corrupted = []
+    for navigation_line in input_data:
+        parsed_items = deque([navigation_line[0]])
+        for chunk_char in navigation_line[1:]:
+            if chunk_char not in [syntax.close_tag for syntax in current_syntax]:
+                parsed_items.append(chunk_char)
+                continue
+            active_chunk = list(filter(lambda syntax: syntax.close_tag == chunk_char, current_syntax)).pop()
+            current_tag = parsed_items.pop()
+            if active_chunk.open_tag != current_tag:
+                corrupted.append(InvalidSyntax(tag=active_chunk, input_line=navigation_line, invalid=chunk_char))
+    return corrupted
+
+
+def to_complete_line(current_tags: deque, current_syntax: list, incomplete_line: str) -> SyntaxCompletion:
+    tags_to_complete = []
+    while len(current_tags) > 0:
+        parsed_tag = current_tags.pop()
+        match_chunk = list(filter(lambda syntax: syntax.open_tag == parsed_tag, current_syntax)).pop()
+        tags_to_complete.append(match_chunk)
+    return SyntaxCompletion(input_line=incomplete_line, required_tags=tags_to_complete)
+
+
+def incomplete_lines(input_data: list, current_syntax: list) -> list:
+    line_endings = []
+    for incomplete_line in input_data:
+        parsed_items = deque([incomplete_line[0]])
+        for chunk_char in incomplete_line[1:]:
+            if chunk_char not in [syntax.close_tag for syntax in current_syntax]:
+                parsed_items.append(chunk_char)
+                continue
+            parsed_items.pop()
+        line_endings.append(to_complete_line(parsed_items, current_syntax, incomplete_line))
+    return line_endings
+
+
+def score_incompletes(endings: list) -> int:
+    line_scores = []
+    for ending in endings:
+        line_score = 0
+        for index, end_tag in enumerate(ending.required_tags):
+            line_score = (line_score * 5) + end_tag.completion_points
+        line_scores.append(line_score)
+    line_scores.sort()
+    mid = math.floor(len(line_scores) / 2)
+    return line_scores[mid]
+
+
 if __name__ == '__main__':
     # data = [
     #     "[({(<(())[]>[[{[]{<()<>>",
@@ -45,46 +94,9 @@ if __name__ == '__main__':
         Chunk(open_tag="[", close_tag="]", points=57, completion_points=2),
         Chunk(open_tag="{", close_tag="}", points=1197, completion_points=3)
     ]
-    corrupt_lines = []
-    endings = [syntax.close_tag for syntax in chunk_syntax]
-    for navigation_line in data:
-        parsed_items = deque([navigation_line[0]])
-        for chunk_char in navigation_line[1:]:
-            if chunk_char not in endings:
-                parsed_items.append(chunk_char)
-                continue
-            active_chunk = list(filter(lambda syntax: syntax.close_tag == chunk_char, chunk_syntax)).pop()
-            current_tag = parsed_items.pop()
-            if active_chunk.open_tag != current_tag:
-                corrupt_lines.append(InvalidSyntax(tag=active_chunk, input_line=navigation_line, invalid=chunk_char))
-    part1_values = sum([corrupt_line.tag.points for corrupt_line in corrupt_lines])
+    invalids = corrupt_lines(data, chunk_syntax)
+    part1_values = sum([invalid.tag.points for invalid in invalids])
     print(f'Part 1: {part1_values}')
-
-    incomplete_lines = list(set(data) - set([corrupt_line.input_line for corrupt_line in corrupt_lines]))
-    line_endings = []
-    for incomplete_line in incomplete_lines:
-        parsed_items = deque([incomplete_line[0]])
-        for chunk_char in incomplete_line[1:]:
-            if chunk_char not in endings:
-                parsed_items.append(chunk_char)
-                continue
-            active_chunk = list(filter(lambda syntax: syntax.close_tag == chunk_char, chunk_syntax)).pop()
-            current_tag = parsed_items.pop()
-        tags_to_complete = []
-        while len(parsed_items) > 0:
-            parsed_tag = parsed_items.pop()
-            match_chunk = list(filter(lambda syntax: syntax.open_tag == parsed_tag, chunk_syntax)).pop()
-            tags_to_complete.append(match_chunk)
-        line_endings.append(SyntaxCompletion(input_line=incomplete_line, required_tags=tags_to_complete))
-
-    line_scores = []
-    for ending in line_endings:
-        line_score = 0
-        for index, end_tag in enumerate(ending.required_tags):
-            line_score = (line_score * 5) + end_tag.completion_points
-        line_scores.append(line_score)
-    line_scores.sort()
-    mid = math.floor(len(line_scores) / 2)
-    middle_score = line_scores[mid]
-    print(f'Part 2: {middle_score}')
-
+    incompletes = incomplete_lines(list(set(data) - set([invalid.input_line for invalid in invalids])), chunk_syntax)
+    part2_value = score_incompletes(incompletes)
+    print(f'Part 2: {part2_value}')
