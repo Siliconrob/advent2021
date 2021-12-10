@@ -55,6 +55,28 @@ def find_low_points(the_grid: pandas.DataFrame) -> (list, Bounds):
     return low_points, the_grid_bounds
 
 
+def find_basins(the_low_points: list, start_grid: pandas.DataFrame, current_bounds: Bounds) -> list:
+    basins = []
+    for low_point in the_low_points:
+        start_location = Point(low_point.row, low_point.column)
+        # print(start_location)
+        cells_to_check = deque([start_location])
+        temp_grid = start_grid.copy(deep=True)
+        while len(cells_to_check) > 0:
+            target_cell = cells_to_check.popleft()
+            temp_grid.iat[target_cell.row, target_cell.column] = np.inf
+            for col_x, row_y in possible_neighbors(target_cell.row, target_cell.column):
+                if col_x < current_bounds.min_column or col_x > current_bounds.max_column:
+                    continue
+                if row_y < current_bounds.min_row or row_y > current_bounds.max_row:
+                    continue
+                if temp_grid.iat[row_y, col_x] < 9:
+                    cells_to_check.append(Point(row_y, col_x))
+        basins.append(temp_grid.eq(np.inf).sum().sum())
+        basins.sort()
+    return basins
+
+
 if __name__ == '__main__':
     # data = [
     # "2199943210",
@@ -64,29 +86,10 @@ if __name__ == '__main__':
     # "9899965678"
     # ]
     data = get_data(day=9, year=2021).splitlines()
-
     data_points = [[int(point) for point in line] for line in data]
     grid = pandas.DataFrame(data_points)
     low_points, bounds = find_low_points(grid)
     part1_answer = sum([low_point.value + 1 for low_point in low_points])
     print(f'Part 1 {part1_answer}')
-
-    basins = []
-    for low_point in low_points:
-        start_location = Point(low_point.row, low_point.column)
-        # print(start_location)
-        cells_to_check = deque([start_location])
-        temp_grid = grid.copy(deep=True)
-        while len(cells_to_check) > 0:
-            target_cell = cells_to_check.popleft()
-            temp_grid.iat[target_cell.row, target_cell.column] = np.inf
-            for col_x, row_y in possible_neighbors(target_cell.row, target_cell.column):
-                if col_x < bounds.min_column or col_x > bounds.max_column:
-                    continue
-                if row_y < bounds.min_row or row_y > bounds.max_row:
-                    continue
-                if temp_grid.iat[row_y, col_x] < 9:
-                    cells_to_check.append(Point(row_y, col_x))
-        basins.append(temp_grid.eq(np.inf).sum().sum())
-        basins.sort()
-    print(f'Part 2: {numpy.prod(basins[-3:])}' )
+    found_basins = find_basins(low_points, grid, bounds)
+    print(f'Part 2: {numpy.prod(found_basins[-3:])}')
