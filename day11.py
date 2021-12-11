@@ -1,10 +1,9 @@
-import math
 from collections import deque
 from dataclasses import dataclass
 import numpy as np
-from tabulate import tabulate
 import pandas
 from aocd import get_data
+from tabulate import tabulate
 
 
 @dataclass
@@ -13,6 +12,9 @@ class Bounds:
     max_row: int = np.inf
     min_column: int = np.inf
     max_column: int = np.inf
+
+    def cell_count(self):
+        return (self.max_row + 1) * (self.max_column + 1)
 
 
 @dataclass
@@ -86,8 +88,11 @@ if __name__ == '__main__':
     grid = pandas.DataFrame(data_points)
     grid_bounds = current_bounds(grid)
 
-    total_flashes = 0
-    for index in range(100):
+    part1_flashes = 0
+    round_index = 0
+    part2_solution = 0
+    part1_solution = 0
+    while round_index < 100 or part2_solution == 0:
         grid = grid.apply(lambda x: x + 1)
         tens = grid.ge(10).sum().sum()
         while tens > 0:
@@ -106,6 +111,13 @@ if __name__ == '__main__':
                         current_round_flashes.append(neighbor)
                     grid.iat[neighbor.row, neighbor.column] = current_value
             tens = grid.ge(10).sum().sum()
-        total_flashes += grid.eq(0).sum().sum()
-    print(tabulate(grid, headers='keys', tablefmt='psql'))
-    print(f'Part 1: {total_flashes}')
+        round_index += 1
+        round_flash = grid.eq(0).sum().sum()
+        part1_flashes += round_flash
+        if round_index == 100:
+            part1_solution = part1_flashes
+        if round_flash == grid_bounds.cell_count():
+            print(tabulate(grid, headers='keys', tablefmt='psql'))
+            part2_solution = round_index
+    print(f'Part 1: {part1_solution}')
+    print(f'Part 2: {part2_solution}')
