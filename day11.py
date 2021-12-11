@@ -85,6 +85,7 @@ def simulate_round(current_grid: pandas.DataFrame) -> pandas.DataFrame:
             current_grid.iat[neighbor.row, neighbor.column] = current_value
     return current_grid
 
+
 if __name__ == '__main__':
     # data = [
     #     "5483143223",
@@ -99,19 +100,18 @@ if __name__ == '__main__':
     #     "5283751526"
     # ]
     data = get_data(day=11, year=2021).splitlines()
-    data_points = [[int(point) for point in line] for line in data]
-    grid = pandas.DataFrame(data_points)
-    grid_bounds = current_bounds(grid)
+    grid = pandas.DataFrame([[int(point) for point in line] for line in data])
 
     part1_flashes = round_index = part1_solution = part2_solution = 0
     while round_index < 100 or part2_solution == 0:
+        # Do the grid stuff
         grid = grid.apply(lambda x: x + 1)
         grid.replace(10, 0, inplace=True)
         grid = simulate_round(grid)
         round_index += 1
-        round_flash = grid.eq(0).sum().sum()
-        part1_flashes += round_flash
+        # Keep track of things
+        part1_flashes += grid.eq(0).sum().sum()
         part1_solution = part1_flashes if round_index == 100 else part1_solution
-        part2_solution = round_index if round_flash == grid_bounds.cell_count() else part2_solution
+        part2_solution = round_index if grid.eq(0).sum().sum() == current_bounds(grid).cell_count() else part2_solution
     print(f'Part 1: {part1_solution}')
     print(f'Part 2: {part2_solution}')
