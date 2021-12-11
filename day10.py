@@ -8,7 +8,7 @@ from aocd import get_data
 class Chunk:
     open_tag: str
     close_tag: str
-    points: int = 0,
+    invalid_points: int = 0,
     completion_points: int = 0
 
 
@@ -89,13 +89,13 @@ if __name__ == '__main__':
     # ]
     data = get_data(day=10, year=2021).splitlines()
     chunk_syntax = [
-        Chunk(open_tag="(", close_tag=")", points=3, completion_points=1),
-        Chunk(open_tag="<", close_tag=">", points=25137, completion_points=4),
-        Chunk(open_tag="[", close_tag="]", points=57, completion_points=2),
-        Chunk(open_tag="{", close_tag="}", points=1197, completion_points=3)
+        Chunk(open_tag="(", close_tag=")", invalid_points=3, completion_points=1),
+        Chunk(open_tag="<", close_tag=">", invalid_points=25137, completion_points=4),
+        Chunk(open_tag="[", close_tag="]", invalid_points=57, completion_points=2),
+        Chunk(open_tag="{", close_tag="}", invalid_points=1197, completion_points=3)
     ]
     invalids = corrupt_lines(data, chunk_syntax)
-    part1_values = sum([invalid.tag.points for invalid in invalids])
+    part1_values = sum([invalid.tag.invalid_points for invalid in invalids])
     print(f'Part 1: {part1_values}')
     incompletes = incomplete_lines(list(set(data) - set([invalid.input_line for invalid in invalids])), chunk_syntax)
     part2_value = score_incompletes(incompletes)
