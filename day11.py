@@ -70,6 +70,21 @@ def match_positions(grid_to_search: pandas.DataFrame, search_value: int) -> list
     return match_locations
 
 
+def simulate_round(current_grid: pandas.DataFrame) -> pandas.DataFrame:
+    current_round_flashes = deque(match_positions(current_grid, 0))
+    while current_round_flashes:
+        flash_position = current_round_flashes.popleft()
+        for neighbor in available_neighbors(current_grid, possible_neighbors(flash_position.row, flash_position.column)):
+            current_value = current_grid.iat[neighbor.row, neighbor.column]
+            if current_value == 0:
+                continue
+            current_value += 1
+            if current_value >= 10:
+                current_value = 0
+                current_round_flashes.append(neighbor)
+            current_grid.iat[neighbor.row, neighbor.column] = current_value
+    return current_grid
+
 if __name__ == '__main__':
     # data = [
     #     "5483143223",
@@ -88,36 +103,15 @@ if __name__ == '__main__':
     grid = pandas.DataFrame(data_points)
     grid_bounds = current_bounds(grid)
 
-    part1_flashes = 0
-    round_index = 0
-    part2_solution = 0
-    part1_solution = 0
+    part1_flashes = round_index = part1_solution = part2_solution = 0
     while round_index < 100 or part2_solution == 0:
         grid = grid.apply(lambda x: x + 1)
-        tens = grid.ge(10).sum().sum()
-        while tens > 0:
-            grid.replace(10, 0, inplace=True)
-            current_round_flashes = deque(match_positions(grid, 0))
-            while current_round_flashes:
-                todo = len(current_round_flashes)
-                flash_position = current_round_flashes.popleft()
-                for neighbor in available_neighbors(grid, possible_neighbors(flash_position.row, flash_position.column)):
-                    current_value = grid.iat[neighbor.row, neighbor.column]
-                    if current_value == 0:
-                        continue
-                    current_value += 1
-                    if current_value == 10:
-                        current_value = 0
-                        current_round_flashes.append(neighbor)
-                    grid.iat[neighbor.row, neighbor.column] = current_value
-            tens = grid.ge(10).sum().sum()
+        grid.replace(10, 0, inplace=True)
+        grid = simulate_round(grid)
         round_index += 1
         round_flash = grid.eq(0).sum().sum()
         part1_flashes += round_flash
-        if round_index == 100:
-            part1_solution = part1_flashes
-        if round_flash == grid_bounds.cell_count():
-            print(tabulate(grid, headers='keys', tablefmt='psql'))
-            part2_solution = round_index
+        part1_solution = part1_flashes if round_index == 100 else part1_solution
+        part2_solution = round_index if round_flash == grid_bounds.cell_count() else part2_solution
     print(f'Part 1: {part1_solution}')
     print(f'Part 2: {part2_solution}')
