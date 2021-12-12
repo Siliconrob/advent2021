@@ -1,6 +1,7 @@
+from collections import deque
 from dataclasses import dataclass
 from aocd import get_data
-
+import networkx as nx
 
 @dataclass
 class LineSegment:
