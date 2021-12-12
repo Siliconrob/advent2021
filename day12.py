@@ -1,4 +1,5 @@
 from collections import deque
+from collections import Counter
 from dataclasses import dataclass
 from aocd import get_data
 import networkx as nx
@@ -20,7 +21,7 @@ def parse_input_line(input_line: str) -> LineSegment:
     return LineSegment(start=coords[0], end=coords[1])
 
 
-def calculate_paths(path_instructions: dict, current_paths: list, path_in_progress: list):
+def calculate_paths(path_instructions: dict, current_paths: list, path_in_progress: list, allow_duplicates: bool):
     current_node = path_in_progress[-1]
     if current_node == 'end':
         # End means the path is done add to the in progress current paths
@@ -29,16 +30,21 @@ def calculate_paths(path_instructions: dict, current_paths: list, path_in_progre
         # Remove the start node from each possible path of neighbors
         availables = set.difference(path_instructions[current_node], set(['start']))
         # If a lower case node is in the path already remove it from the list of available
-        repeats = set([node for node in availables if node.islower() and node in path_in_progress])
+        repeats = [node for node in availables if node.islower() and node in path_in_progress]
+        if allow_duplicates and current_node.islower() and current_node in path_in_progress:
+            # not working
+            z = Counter(path_in_progress)[current_node]
+            if z > 1:
+                repeats.remove(current_node)
+        repeats = set(repeats)
         availables = set.difference(availables, repeats)
-        # all available recurse for paths
+        # # all available recurse for paths
         for available in availables:
-            calculate_paths(path_instructions, current_paths, path_in_progress + [available])
+            calculate_paths(path_instructions, current_paths, path_in_progress + [available], allow_duplicates)
 
-
-def all_paths(path_instructions: dict) -> int:
+def all_paths(path_instructions: dict, allow_duplicates: bool) -> int:
     current_paths = []
-    calculate_paths(path_instructions, current_paths, ['start'])
+    calculate_paths(path_instructions, current_paths, ['start'], allow_duplicates)
     return len(current_paths)
 
 
@@ -68,5 +74,8 @@ if __name__ == '__main__':
     for node in G.nodes:
         path_sets[node] = set(G.neighbors(node))
 
-    part1_solution = all_paths(path_sets)
+    part1_solution = all_paths(path_sets, False)
     print(f'Part 1: {part1_solution}')
+
+    part2_solution = all_paths(path_sets, True)
+    print(f'Part 2: {part2_solution}') # not working
