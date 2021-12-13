@@ -76,3 +76,8 @@ if __name__ == '__main__':
             max_y = max_y - (fold_value + 1)
         paper = folded_paper
     print(f'Part 1: {part1_solution}')
+
+    the_keys = paper.keys()
+    max_x = max([key[0] for key in the_keys]) + 1
+    max_y = max([key[1] for key in the_keys]) + 1
+    printout(paper, 'final', max_x, max_y)
