@@ -1,6 +1,13 @@
 from collections import Counter, defaultdict
+from dataclasses import dataclass
 from aocd import get_data
 import itertools
+
+
+@dataclass
+class Polymer:
+    name: str
+    total: int = 0
 
 
 def part2_rule_keyset(original_data: list) -> dict:
@@ -12,13 +19,37 @@ def part2_rule_keyset(original_data: list) -> dict:
     return rules
 
 
-def build_pair_counts(start_line: str) -> dict:
+def build_pair_counts(start_line: str) -> Counter:
     current_input = start_line
     current_chars = [current_char for current_char in current_input]
     pair_keys = []
     for pair_index, pair_key in enumerate(list(itertools.pairwise(current_chars))):
         pair_keys.append("".join(pair_key))
-    return dict(Counter(pair_keys))
+    return Counter(pair_keys)
+
+
+def part2_count_letters(total_pair_counts: Counter, start_input: str) -> Counter:
+    letter_count = Counter()
+    # Add the last character from initial input as it has no accompanying pair for the counting buckets of
+    # the dictionary
+    letter_count[start_input[-1]] += 1
+    for k, v in total_pair_counts.items():
+        letter = k[0]
+        if letter in letter_count:
+            letter_count[letter] += v
+        else:
+            letter_count[letter] = v
+    return letter_count
+
+
+def solution_finder(observed_letters: Counter) -> (int, list):
+    counts = observed_letters.most_common()
+    polymers = []
+    (most_chemical, most_common) = counts[0]
+    polymers.append(Polymer(most_chemical, most_common))
+    (least_chemical, least_common) = counts[-1]
+    polymers.append(Polymer(least_chemical, least_common))
+    return most_common - least_common, polymers
 
 if __name__ == '__main__':
     # data = [
@@ -67,18 +98,15 @@ if __name__ == '__main__':
         current_input = revised_input
         print(f'Step {index}')
 
-    counts = Counter(current_input).most_common()
-    (most_chemical, most_common) = counts[0]
-    (least_chemical, least_common) = counts[-1]
-    part1_solution = most_common - least_common
-    print(f'Part 1 solution: {(most_chemical, most_common)} - {(least_chemical, least_common)} = {part1_solution}')
+    part1_solution, part1_polymers = solution_finder(Counter(current_input))
+    print(f'Part 1 solution: {part1_polymers[0]} - {part1_polymers[-1]} = {part1_solution}')
 
     pair_counts_dict = build_pair_counts(initial_input)
     part2_rules = part2_rule_keyset(data)
 
     # Use bucketing because can't do this iteratively
     for index in range(40):
-        current_pair_counts = defaultdict(int)
+        current_pair_counts = Counter()
         for pair_count in pair_counts_dict:
             new_polymer = part2_rules[pair_count]
             # buckets count letters produced and match on start and endings
@@ -92,20 +120,6 @@ if __name__ == '__main__':
         # Reset the dictionary with latest
         pair_counts_dict = current_pair_counts
 
-    letter_count = defaultdict(int)
-    # Add the last character from initial input as it has no accompanying pair for the counting buckets of
-    # the dictionary
-    letter_count[initial_input[-1]] += 1
-    for k, v in pair_counts_dict.items():
-        letter = k[0]
-        if letter in letter_count:
-            letter_count[letter] += v
-        else:
-            letter_count[letter] = v
-
-    part2_counts = Counter(letter_count).most_common()
-    (most_chemical, most_common) = part2_counts[0]
-    (least_chemical, least_common) = part2_counts[-1]
-    part2_solution = most_common - least_common
-    print(f'Part 2 solution: {(most_chemical, most_common)} - {(least_chemical, least_common)} = {part2_solution}')
-
+    total_letters = part2_count_letters(pair_counts_dict, initial_input)
+    part2_solution, part2_polymers = solution_finder(total_letters)
+    print(f'Part 2 solution: {part2_polymers[0]} - {part2_polymers[-1]} = {part2_solution}')
