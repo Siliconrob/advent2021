@@ -1,7 +1,8 @@
-from collections import Counter, defaultdict
-from dataclasses import dataclass
-from aocd import get_data
 import itertools
+from collections import Counter
+from dataclasses import dataclass
+
+from aocd import get_data
 
 
 @dataclass
